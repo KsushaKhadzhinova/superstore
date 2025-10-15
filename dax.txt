@@ -1,0 +1,323 @@
+// ===== Date Table =====
+DateTable = 
+ADDCOLUMNS (
+    CALENDAR (DATE(2014,1,1), DATE(2018,12,31)),
+    "Year", YEAR([Date]),
+    "Month", FORMAT([Date], "MMMM"),
+    "MonthNum", MONTH([Date]),
+    "Quarter", "Q" & FORMAT([Date], "Q")
+)
+
+// ===== Sales and Profit Measures =====
+Total Sales = SUM('mart sales_fact'[Sales])
+Total Profit = SUM('mart sales_fact'[Profit])
+Total Quantity = SUM('mart sales_fact'[Quantity])
+Total Orders = DISTINCTCOUNT('mart sales_fact'[Order_ID])
+Total Customers = DISTINCTCOUNT('mart sales_fact'[Customer_ID])
+
+Profit Margin = DIVIDE([Total Profit], [Total Sales], 0)
+Profit Margin % = DIVIDE([Total Profit], [Total Sales], 0)
+Avg Profit Margin = 
+    AVERAGEX(
+        VALUES('mart sales_fact'[product_id]),
+        [Profit Margin]
+    )
+
+Avg Profit per Product = 
+AVERAGEX(
+    VALUES('mart product'[Product_Name]),
+    [Total Profit]
+)
+
+Profit Category = 
+VAR ProductProfit =
+    CALCULATE (
+        SUM('mart sales_fact'[Profit]),
+        FILTER(
+            'mart sales_fact',
+            'mart sales_fact'[Product_ID] = SELECTEDVALUE('mart product'[Product_ID])
+        )
+    )
+RETURN
+IF(ProductProfit > 5000, "High", "Low")
+
+Profit Margin Category = 
+VAR Margin = [Profit Margin %]
+RETURN
+SWITCH(
+    TRUE(),
+    Margin < 0.05, "Low Margin (<5%)",
+    Margin < 0.15, "Medium Margin (5–15%)",
+    Margin >= 0.15, "High Margin (≥15%)",
+    "No Data"
+)
+
+Profit per Product (sales) = 
+DIVIDE([Total Profit], DISTINCTCOUNT('mart sales_fact'[Product_ID]))
+
+Product Rank by Profit = 
+RANKX(
+    ALL('mart product'[Product_Name]),
+    [Total Profit],
+    ,
+    DESC,
+    DENSE
+)
+
+Product Rank by Sales = 
+RANKX(
+    ALL('mart product'[Product_Name]),
+    [Total Sales],
+    ,
+    DESC,
+    DENSE
+)
+
+// ===== Sales by Product and Category =====
+Product Full Name = 
+VAR CategoryName = SELECTEDVALUE('mart product'[Category], "Unknown Category")
+VAR ProductName = SELECTEDVALUE('mart product'[Product_Name], "Unnamed Product")
+RETURN
+CategoryName & " - " & ProductName
+
+Top 5 Products by Profit = 
+CALCULATE(
+    [Total Profit],
+    TOPN(5, 'mart sales_fact', [Total Profit], DESC)
+)
+
+Top 5 Products by Sales = 
+CALCULATE(
+    [Total Sales],
+    TOPN(5, 'mart sales_fact', [Total Sales], DESC)
+)
+
+Top Category = 
+VAR _maxSales = MAXX(ALL('mart sales_fact'), [Total Sales])
+RETURN
+MAXX(
+    FILTER(ALL('mart sales_fact'), [Total Sales] = _maxSales),
+    'mart sales_fact'[Category]
+)
+
+Top Product Name = 
+VAR _maxSales = MAXX(ALL('mart sales_fact'), [Total Sales])
+RETURN
+MAXX(
+    FILTER(ALL('mart sales_fact'), [Total Sales] = _maxSales),
+    'mart sales_fact'[Product_Name]
+)
+
+Sales by Category = 
+SUMX(
+    VALUES('mart sales_fact'[category]),
+    [Total Sales]
+)
+
+Sales by Sub-Category = 
+SUMX(
+    VALUES('mart sales_fact'[sub_category]),
+    [Total Sales]
+)
+
+// ===== Sales Performance Over Time =====
+Sales LY = CALCULATE([Total Sales], SAMEPERIODLASTYEAR('DateTable'[Date]))
+Sales MTD = TOTALMTD([Total Sales], 'DateTable'[Date])
+Sales QTD = TOTALQTD([Total Sales], 'DateTable'[Date])
+Sales YTD = TOTALYTD([Total Sales], 'DateTable'[Date])
+
+Sales Growth % = DIVIDE([Sales YTD] - [Sales LY], [Sales LY])
+YoY Growth % = DIVIDE([Sales YTD] - [Sales LY], [Sales LY])
+
+Sales Rolling 3M = 
+AVERAGEX(
+    DATESINPERIOD('DateTable'[Date], MAX('DateTable'[Date]), -3, MONTH),
+    [Total Sales]
+)
+
+Rolling 3M Sales = CALCULATE([Total Sales], DATESINPERIOD('DateTable'[Date], MAX('DateTable'[Date]), -3, MONTH))
+
+// ===== Customer Analysis =====
+Customer Count = DISTINCTCOUNT('mart sales_fact'[Customer_ID])
+
+Customer Orders = 
+CALCULATE(
+    DISTINCTCOUNT('mart sales_fact'[Order_ID]),
+    ALLEXCEPT('mart sales_fact', 'mart sales_fact'[Customer_ID])
+)
+
+Monetary = SUM('mart sales_fact'[Sales])
+
+Monetary Score = 
+VAR m = [Monetary]
+RETURN
+SWITCH(
+    TRUE(),
+    m >= 10000, 5,
+    m >= 5000, 4,
+    m >= 2000, 3,
+    m >= 1000, 2,
+    1
+)
+
+Frequency = COUNTROWS(DISTINCT('mart sales_fact'[Order_ID]))
+
+Frequency Score =
+VAR f = [Frequency]
+RETURN
+SWITCH(
+    TRUE(),
+    f >= 10, 5,
+    f >= 6, 4,
+    f >= 3, 3,
+    f >= 2, 2,
+    1
+)
+
+Purchase Frequency = [Total Orders] / [Total Customers]
+
+Days Since Last Purchase = DATEDIFF(MAX('mart sales_fact'[Order_Date]), TODAY(), DAY)
+
+Months Since First Purchase = 
+DATEDIFF(
+    'mart sales_fact'[Cohort Month],
+    'mart sales_fact'[Order_Date],
+    MONTH
+)
+
+Cohort Month = 
+CALCULATE(
+    MIN('mart sales_fact'[Order_Date]),
+    FILTER(
+        'mart sales_fact',
+        'mart sales_fact'[Customer_ID] = EARLIER('mart sales_fact'[Customer_ID])
+    )
+)
+
+Recency (Days) = 
+VAR LastPurchase =
+    CALCULATE(
+        MAX('mart sales_fact'[Order_Date]),
+        ALLEXCEPT('mart sales_fact', 'mart sales_fact'[Customer_ID])
+    )
+RETURN
+DATEDIFF(LastPurchase, TODAY(), DAY)
+
+Recency Score = 
+VAR r = [Recency (Days)]
+RETURN
+SWITCH(
+    TRUE(),
+    r <= 30, 5,
+    r <= 60, 4,
+    r <= 120, 3,
+    r <= 240, 2,
+    1
+)
+
+Retention % = 
+VAR CustomersInCohort =
+    CALCULATE(
+        DISTINCTCOUNT('mart sales_fact'[Customer_ID]),
+        FILTER(
+            'mart sales_fact',
+            'mart sales_fact'[Months Since First Purchase] = 0
+        )
+    )
+VAR ActiveCustomers = [Customer Count]
+RETURN
+DIVIDE(ActiveCustomers, CustomersInCohort, 0)
+
+Retention Rate = ([Customer Orders] / [Total Customers])
+
+MeasCustomer LTV = [Total Sales] / [Total Customers]
+
+RFM Category = 
+VAR CustomerID = 'mart sales_fact'[Customer_ID]
+VAR RecencyDays =
+    DATEDIFF(
+        CALCULATE(MAX('mart sales_fact'[Order_Date]), FILTER('mart sales_fact', 'mart sales_fact'[Customer_ID] = CustomerID)),
+        TODAY(),
+        DAY
+    )
+VAR Frequency =
+    CALCULATE(
+        DISTINCTCOUNT('mart sales_fact'[Order_ID]),
+        FILTER('mart sales_fact', 'mart sales_fact'[Customer_ID] = CustomerID)
+    )
+VAR Monetary =
+    CALCULATE(
+        SUM('mart sales_fact'[Sales]),
+        FILTER('mart sales_fact', 'mart sales_fact'[Customer_ID] = CustomerID)
+    )
+VAR R =
+    SWITCH(
+        TRUE(),
+        RecencyDays <= 30, 5,
+        RecencyDays <= 60, 4,
+        RecencyDays <= 120, 3,
+        RecencyDays <= 240, 2,
+        1
+    )
+VAR F =
+    SWITCH(
+        TRUE(),
+        Frequency >= 10, 5,
+        Frequency >= 6, 4,
+        Frequency >= 3, 3,
+        Frequency >= 2, 2,
+        1
+    )
+VAR M =
+    SWITCH(
+        TRUE(),
+        Monetary >= 10000, 5,
+        Monetary >= 5000, 4,
+        Monetary >= 2000, 3,
+        Monetary >= 1000, 2,
+        1
+    )
+RETURN
+SWITCH(
+    TRUE(),
+    R >= 4 && F >= 4 && M >= 4, "🏆 Champions",
+    R >= 3 && F >= 3 && M >= 3, "💎 Loyal",
+    R <= 2 && F >= 3 && M >= 2, "⚠️ At Risk",
+    R <= 2 && F <= 2 && M <= 2, "❌ Lost",
+    "🟢 Others"
+)
+
+// ===== Context and User Info =====
+Current User = USERPRINCIPALNAME()
+
+Current Region = 
+LOOKUPVALUE(
+    UserRegionMap[Region],
+    UserRegionMap[UserEmail],
+    USERPRINCIPALNAME(),
+    "All"
+)
+
+User Greeting = 
+"Hello, " & USERPRINCIPALNAME() & "! You are viewing data for region: " & [Current Region]
+
+// ===== Store and Ranking =====
+Rank by Sales = 
+RANKX(
+    ALLSELECTED('mart store'[Store_Name]),
+    [Total Sales],
+    ,
+    DESC
+)
+
+% of Total Sales (Store) = DIVIDE([Total Sales], CALCULATE([Total Sales], ALL('mart store')))
+
+Sales (Ignore Region Filter) = CALCULATE([Total Sales], REMOVEFILTERS('mart store'[Region]))
+
+Sales % in Context = 
+DIVIDE(
+    [Total Sales],
+    CALCULATE([Total Sales], ALLSELECTED('mart sales_fact'))
+)
+
+Sales % of Total = DIVIDE([Total Sales], CALCULATE([Total Sales], ALL('mart sales_fact')))

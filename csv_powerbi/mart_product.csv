@@ -1,0 +1,51 @@
+product_id,product_name,category,sub_category,price,cost
+1,Product 1,Technology,Subcat B,354.97,108.28
+2,Product 2,Furniture,Subcat A,323.77,83.17
+3,Product 3,Office Supplies,Subcat B,391.53,240.09
+4,Product 4,Technology,Subcat A,401.26,212.47
+5,Product 5,Furniture,Subcat B,127.06,122.50
+6,Product 6,Office Supplies,Subcat A,250.62,198.65
+7,Product 7,Technology,Subcat B,372.18,99.11
+8,Product 8,Furniture,Subcat A,409.14,202.12
+9,Product 9,Office Supplies,Subcat B,346.24,98.69
+10,Product 10,Technology,Subcat A,488.83,100.53
+11,Product 11,Furniture,Subcat B,438.08,205.79
+12,Product 12,Office Supplies,Subcat A,282.03,179.83
+13,Product 13,Technology,Subcat B,348.27,87.66
+14,Product 14,Furniture,Subcat A,313.93,196.90
+15,Product 15,Office Supplies,Subcat B,372.74,64.94
+16,Product 16,Technology,Subcat A,495.80,78.15
+17,Product 17,Furniture,Subcat B,368.54,52.60
+18,Product 18,Office Supplies,Subcat A,294.82,114.31
+19,Product 19,Technology,Subcat B,375.36,171.48
+20,Product 20,Furniture,Subcat A,420.93,175.88
+21,Product 21,Office Supplies,Subcat B,486.89,77.53
+22,Product 22,Technology,Subcat A,368.91,133.36
+23,Product 23,Furniture,Subcat B,240.02,70.04
+24,Product 24,Office Supplies,Subcat A,275.62,216.74
+25,Product 25,Technology,Subcat B,329.35,198.70
+26,Product 26,Furniture,Subcat A,443.30,177.82
+27,Product 27,Office Supplies,Subcat B,122.47,181.40
+28,Product 28,Technology,Subcat A,385.54,90.68
+29,Product 29,Furniture,Subcat B,404.06,185.09
+30,Product 30,Office Supplies,Subcat A,474.62,155.39
+31,Product 31,Technology,Subcat B,198.52,88.80
+32,Product 32,Furniture,Subcat A,240.70,61.34
+33,Product 33,Office Supplies,Subcat B,148.68,171.52
+34,Product 34,Technology,Subcat A,112.31,190.60
+35,Product 35,Furniture,Subcat B,159.63,73.21
+36,Product 36,Office Supplies,Subcat A,436.78,68.87
+37,Product 37,Technology,Subcat B,205.51,238.95
+38,Product 38,Furniture,Subcat A,316.88,182.22
+39,Product 39,Office Supplies,Subcat B,157.76,215.29
+40,Product 40,Technology,Subcat A,342.12,91.57
+41,Product 41,Furniture,Subcat B,434.32,176.23
+42,Product 42,Office Supplies,Subcat A,220.53,207.01
+43,Product 43,Technology,Subcat B,162.10,143.77
+44,Product 44,Furniture,Subcat A,287.45,228.24
+45,Product 45,Office Supplies,Subcat B,119.96,181.95
+46,Product 46,Technology,Subcat A,167.29,126.09
+47,Product 47,Furniture,Subcat B,295.11,94.41
+48,Product 48,Office Supplies,Subcat A,475.46,179.55
+49,Product 49,Technology,Subcat B,224.70,134.43
+50,Product 50,Furniture,Subcat A,422.98,181.91
