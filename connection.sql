@@ -1,2 +1,0 @@
-GRANT CONNECT ON DATABASE superstore TO postgres;
-GRANT ALL PRIVILEGES ON DATABASE superstore TO postgres;
